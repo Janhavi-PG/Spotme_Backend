@@ -22,11 +22,23 @@ public class GraphHopperWebClientConfig {
     @Value("${graphhopper.ssl-insecure:false}")
     private boolean sslInsecure;
 
+    /**
+     * GraphHopper returns the full route geometry when points_encoded=false,
+     * which routinely exceeds WebClient's 256 KB default in-memory buffer.
+     */
+    @Value("${graphhopper.max-in-memory-bytes:16777216}")
+    private int maxInMemoryBytes;
+
     @Bean("graphHopperWebClient")
     public WebClient graphHopperWebClient() throws Exception {
 
         if (!sslInsecure) {
-            return WebClient.builder().build();
+            return WebClient.builder()
+                    .codecs(configurer -> configurer
+                            .defaultCodecs()
+                            .maxInMemorySize(maxInMemoryBytes)
+                    )
+                    .build();
         }
 
         SslContext insecureSslContext =
@@ -48,6 +60,10 @@ public class GraphHopperWebClientConfig {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(maxInMemoryBytes)
+                )
                 .build();
     }
 }
