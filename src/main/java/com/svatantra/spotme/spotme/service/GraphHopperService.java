@@ -1,5 +1,6 @@
 package com.svatantra.spotme.spotme.service;
 import com.svatantra.common.logging.StructuredLogger;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
@@ -13,8 +14,14 @@ import com.svatantra.spotme.spotme.dto.activities.ActivityItem;
 import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class GraphHopperService {
-    private final WebClient webClient =
-            WebClient.builder().build();
+    private final WebClient webClient;
+
+    public GraphHopperService(
+            @Qualifier("graphHopperWebClient") WebClient webClient
+    ) {
+        this.webClient = webClient;
+    }
+
     @Value("${graphhopper.api.key}")
     private String apiKey;
 
